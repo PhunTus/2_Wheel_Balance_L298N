@@ -7,7 +7,7 @@
 #include "Wire.h"
 #endif
 
-#define MIN_ABS_SPEED 20
+#define MIN_ABS_SPEED 30
 
 MPU6050 mpu;
 
@@ -25,20 +25,20 @@ VectorFloat gravity;
 float ypr[3];
 
 //PID
-double originalSetpoint = 180;
+double originalSetpoint = 0;
 double setpoint = originalSetpoint;
 double movingAngleOffset = 0.1;
 double input, output;
-double Kp = 27;
-double Kd = 1.4;
-double Ki = 180;
+double Kp = 100;
+double Kd = 1;
+double Ki = 1;
 
 
 PID pid(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
 
-double motorSpeedFactorLeft = 0.6;
-double motorSpeedFactorRight = 0.6;
+double motorSpeedFactorLeft = 1.5;
+double motorSpeedFactorRight = 1.5;
 
 int ENA = 9;
 int IN1 = 7;
@@ -58,6 +58,7 @@ void dmpDataReady() {
 
 
 void setup() {
+  Serial.begin(115200);
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   Wire.begin();
   TWBR = 24;
@@ -86,8 +87,8 @@ void setup() {
     packetSize = mpu.dmpGetFIFOPacketSize();
 
     pid.SetMode(AUTOMATIC);
-    pid.SetSampleTime(10);
-    pid.SetOutputLimits(-255, 255);
+    pid.SetSampleTime(1.5);
+    pid.SetOutputLimits(-230, 230);
 
   } else {
     Serial.print(F("DMP Initialization failed (code "));
@@ -103,7 +104,7 @@ void loop() {
 
   while (!mpuInterrupt && fifoCount < packetSize) {
     pid.Compute();
-    motorController.move(output, MIN_ABS_SPEED);
+    motorController.move( -output, MIN_ABS_SPEED);
   }
 
   mpuInterrupt = false;
@@ -126,6 +127,11 @@ void loop() {
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-    input = ypr[1] * 180 / M_PI + 180;
+
+    input = ypr[1] * 180 / M_PI ;
+
+    Serial.print("Angle: "); Serial.print(input);
+    Serial.print(" | Output: "); Serial.println(output);
+
   }
 }
