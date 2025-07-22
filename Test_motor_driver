@@ -1,0 +1,36 @@
+#define ENA 9     // PWM điều tốc motor phải
+#define IN1 4     // Điều khiển chiều
+#define IN2 5
+
+void setup() {
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+
+  Serial.begin(9600);
+  Serial.println("Test motor phải bắt đầu...");
+}
+
+void loop() {
+  // Quay tiến
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 200);  // Tốc độ 0–255
+  Serial.println("Quay tiến");
+  delay(2000);
+
+  // Dừng
+  analogWrite(ENA, 0);
+  delay(1000);
+
+  // Quay lùi
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, 200);
+  Serial.println("Quay lùi");
+  delay(2000);
+
+  // Dừng
+  analogWrite(ENA, 0);
+  delay(1000);
+}
